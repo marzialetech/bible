@@ -73,29 +73,33 @@ let bibleData = null;
 let currentBookIndex = null;
 let currentChapter = 1;
 let currentVerseIndex = 0;
-let allVerses = []; // Flat array of all verses in current book
+let allVerses = [];
 let isPlaying = false;
 let speed = 1;
 let selectedVoice = null;
 let voices = [];
+let dataLoaded = false;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        document.getElementById('subtitle').textContent = 'Loading Bible data...';
-        const res = await fetch('bible.json');
-        bibleData = await res.json();
-        document.getElementById('subtitle').textContent = 'Select a book to begin reading';
-    } catch (err) {
-        document.getElementById('subtitle').textContent = 'Failed to load Bible data';
-        console.error(err);
-        return;
-    }
-    
     populateBooks();
     populateVoices();
     if (speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = populateVoices;
+    }
+    
+    // Load Bible data
+    try {
+        document.getElementById('subtitle').textContent = 'Loading Bible data...';
+        const res = await fetch('bible.json');
+        if (!res.ok) throw new Error('Failed to fetch');
+        bibleData = await res.json();
+        dataLoaded = true;
+        document.getElementById('subtitle').textContent = 'Select a book to begin reading';
+        console.log('Bible data loaded:', bibleData.length, 'books');
+    } catch (err) {
+        document.getElementById('subtitle').textContent = 'Failed to load Bible data: ' + err.message;
+        console.error('Load error:', err);
     }
 });
 
@@ -135,11 +139,18 @@ function setVoice(index) {
 }
 
 function loadBook() {
+    if (!dataLoaded || !bibleData) {
+        alert('Bible data is still loading. Please wait.');
+        return;
+    }
+    
     const bookIndex = parseInt(document.getElementById('book-select').value);
-    if (isNaN(bookIndex)) {
+    if (isNaN(bookIndex) || bookIndex < 0) {
         alert('Please select a book');
         return;
     }
+    
+    console.log('Loading book index:', bookIndex);
     
     currentBookIndex = bookIndex;
     currentChapter = 1;
@@ -148,14 +159,23 @@ function loadBook() {
     const book = BOOKS[bookIndex];
     const bookData = bibleData[bookIndex];
     
+    if (!bookData) {
+        alert('Book data not found');
+        console.error('No data for book index:', bookIndex);
+        return;
+    }
+    
+    console.log('Book data:', book.name, 'chapters in data:', bookData.chapters.length);
+    
     document.getElementById('book-title').textContent = book.name;
     document.getElementById('subtitle').style.display = 'none';
     document.getElementById('current-ref').textContent = `${book.name} 1:1`;
     document.getElementById('bottom-nav').style.display = 'block';
     
     // Build table of contents
+    const numChapters = bookData.chapters.length;
     let tocHtml = '';
-    for (let i = 1; i <= book.chapters; i++) {
+    for (let i = 1; i <= numChapters; i++) {
         tocHtml += `<a href="#ch${i}">${i}</a>`;
     }
     document.getElementById('toc').innerHTML = tocHtml;
@@ -164,13 +184,11 @@ function loadBook() {
     let chaptersHtml = '';
     allVerses = [];
     
-    for (let ch = 1; ch <= book.chapters; ch++) {
+    for (let ch = 1; ch <= numChapters; ch++) {
         const chapterVerses = bookData.chapters[ch - 1] || [];
         
-        // Chapter section
-        const isFirst = ch === 1;
         const prevCh = ch > 1 ? `<a href="#ch${ch-1}">← Prev</a>` : '';
-        const nextCh = ch < book.chapters ? `<a href="#ch${ch+1}">Next →</a>` : '';
+        const nextCh = ch < numChapters ? `<a href="#ch${ch+1}">Next →</a>` : '';
         
         chaptersHtml += `
             <div class="chapter-section" id="section-${ch}">
@@ -181,11 +199,10 @@ function loadBook() {
             </div>
         `;
         
-        // Verses - group into paragraphs
         let versesHtml = '<p>';
         chapterVerses.forEach((text, i) => {
             const verseNum = i + 1;
-            const cleanText = text.replace(/\{[^}]*\}/g, ''); // Remove KJV annotations
+            const cleanText = text.replace(/\{[^}]*\}/g, '');
             
             allVerses.push({
                 chapter: ch,
@@ -196,7 +213,6 @@ function loadBook() {
             
             versesHtml += `<span class="verse" data-chapter="${ch}" data-verse="${verseNum}"><span class="verse-num">${verseNum}</span>${cleanText} </span>`;
             
-            // New paragraph every ~4 verses
             if (verseNum % 4 === 0 && verseNum < chapterVerses.length) {
                 versesHtml += '</p><p>';
             }
@@ -208,7 +224,7 @@ function loadBook() {
     
     document.getElementById('chapters').innerHTML = chaptersHtml;
     
-    // Add click handlers to verses
+    // Add click handlers
     document.querySelectorAll('.verse').forEach(el => {
         el.addEventListener('click', () => {
             const ch = parseInt(el.dataset.chapter);
@@ -217,8 +233,13 @@ function loadBook() {
         });
     });
     
+    console.log('Loaded', allVerses.length, 'verses');
+    
     // Highlight first verse
     highlightVerse(1, 1);
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
 }
 
 function highlightVerse(chapter, verseNum) {
@@ -234,7 +255,6 @@ function highlightVerse(chapter, verseNum) {
     const book = BOOKS[currentBookIndex];
     document.getElementById('current-ref').textContent = `${book.name} ${chapter}:${verseNum}`;
     
-    // Update currentVerseIndex
     currentVerseIndex = allVerses.findIndex(v => v.chapter === chapter && v.num === verseNum);
 }
 
@@ -275,7 +295,10 @@ function speakCurrentVerse() {
 }
 
 function playFromCurrent() {
-    if (allVerses.length === 0) return;
+    if (allVerses.length === 0) {
+        alert('Please load a book first');
+        return;
+    }
     isPlaying = true;
     speakCurrentVerse();
 }
@@ -311,22 +334,14 @@ function nextVerse() {
 
 function prevChapter() {
     if (currentChapter > 1) {
-        const newChapter = currentChapter - 1;
-        const firstVerse = allVerses.find(v => v.chapter === newChapter);
-        if (firstVerse) {
-            goToVerse(newChapter, 1);
-        }
+        goToVerse(currentChapter - 1, 1);
     }
 }
 
 function nextChapter() {
-    const book = BOOKS[currentBookIndex];
-    if (currentChapter < book.chapters) {
-        const newChapter = currentChapter + 1;
-        const firstVerse = allVerses.find(v => v.chapter === newChapter);
-        if (firstVerse) {
-            goToVerse(newChapter, 1);
-        }
+    const bookData = bibleData[currentBookIndex];
+    if (currentChapter < bookData.chapters.length) {
+        goToVerse(currentChapter + 1, 1);
     }
 }
 
