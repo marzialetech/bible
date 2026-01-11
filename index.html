@@ -6,23 +6,19 @@
     <title>Bible Reader</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body id="top">
     <div class="floating-controls" id="floating-controls">
         <div class="current-ref" id="current-ref">Select a book</div>
         
         <select id="book-select">
-            <option value="">-- Book --</option>
+            <option value="">-- Select Book --</option>
         </select>
         
-        <select id="chapter-select">
-            <option value="">-- Chapter --</option>
-        </select>
-        
-        <button onclick="loadChapter()" class="load-btn">Load</button>
+        <button onclick="loadBook()" class="load-btn">Load Book</button>
         
         <hr>
         
-        <select id="voice-select">
+        <select id="voice-select" onchange="setVoice(this.value)">
             <option value="">Loading voices...</option>
         </select>
         
@@ -38,20 +34,30 @@
         </div>
         
         <div class="btn-row">
-            <button onclick="prevVerse()">← Prev</button>
-            <button onclick="nextVerse()">Next →</button>
+            <button onclick="prevVerse()">← Prev verse</button>
+            <button onclick="nextVerse()">Next verse →</button>
         </div>
         
         <div class="btn-row">
-            <button onclick="prevChapter()">← Ch</button>
-            <button onclick="nextChapter()">Ch →</button>
+            <button onclick="prevChapter()">← Prev ch.</button>
+            <button onclick="nextChapter()">Next ch. →</button>
         </div>
+        
+        <button onclick="restartCurrentChapter()">Restart chapter</button>
     </div>
 
     <main id="content">
         <h1 id="book-title">Bible Reader</h1>
-        <p class="subtitle">Select a book and chapter to begin</p>
-        <div id="verses"></div>
+        <p class="subtitle" id="subtitle">Select a book to begin reading</p>
+        
+        <div class="toc" id="toc"></div>
+        
+        <div id="chapters"></div>
+        
+        <div class="nav" id="bottom-nav" style="display:none; margin-top: 40px; padding-top: 20px; border-top: 1px solid #333;">
+            <a href="#top">Top</a>
+        </div>
+        <div id="bottom"></div>
     </main>
 
     <script src="app.js"></script>

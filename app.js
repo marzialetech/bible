@@ -1,4 +1,4 @@
-// Bible books with abbreviations matching the JSON file
+// Bible books metadata
 const BOOKS = [
     { name: 'Genesis', abbrev: 'gn', chapters: 50 },
     { name: 'Exodus', abbrev: 'ex', chapters: 40 },
@@ -68,29 +68,26 @@ const BOOKS = [
     { name: 'Revelation', abbrev: 'rev', chapters: 22 }
 ];
 
-// Bible data (loaded from JSON)
+// State
 let bibleData = null;
-
-// Current state
 let currentBookIndex = null;
-let currentChapter = null;
-let verses = [];
+let currentChapter = 1;
 let currentVerseIndex = 0;
+let allVerses = []; // Flat array of all verses in current book
 let isPlaying = false;
 let speed = 1;
 let selectedVoice = null;
-let allVoices = [];
+let voices = [];
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-    // Load Bible JSON
     try {
-        document.getElementById('verses').innerHTML = '<p class="loading">Loading Bible data...</p>';
+        document.getElementById('subtitle').textContent = 'Loading Bible data...';
         const res = await fetch('bible.json');
         bibleData = await res.json();
-        document.getElementById('verses').innerHTML = '<p class="subtitle">Select a book and chapter to begin</p>';
+        document.getElementById('subtitle').textContent = 'Select a book to begin reading';
     } catch (err) {
-        document.getElementById('verses').innerHTML = '<p class="error">Failed to load Bible data</p>';
+        document.getElementById('subtitle').textContent = 'Failed to load Bible data';
         console.error(err);
         return;
     }
@@ -110,134 +107,139 @@ function populateBooks() {
         opt.textContent = book.name;
         select.appendChild(opt);
     });
-    
-    select.addEventListener('change', () => {
-        populateChapters(parseInt(select.value));
-    });
-}
-
-function populateChapters(bookIndex) {
-    const select = document.getElementById('chapter-select');
-    select.innerHTML = '<option value="">-- Chapter --</option>';
-    
-    if (bookIndex < 0 || !BOOKS[bookIndex]) return;
-    
-    const book = BOOKS[bookIndex];
-    for (let i = 1; i <= book.chapters; i++) {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = `Chapter ${i}`;
-        select.appendChild(opt);
-    }
 }
 
 function populateVoices() {
     const select = document.getElementById('voice-select');
-    const voices = speechSynthesis.getVoices();
-    allVoices = voices.filter(v => v.lang.startsWith('en'));
+    voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
     
     select.innerHTML = '';
     let defaultIndex = 0;
     
-    allVoices.forEach((voice, i) => {
+    voices.forEach((voice, i) => {
         const opt = document.createElement('option');
         opt.value = i;
         opt.textContent = `${voice.name} (${voice.lang})`;
         select.appendChild(opt);
-        
-        if (voice.name.toLowerCase().includes('superstar')) {
-            defaultIndex = i;
-        }
+        if (voice.name.toLowerCase().includes('superstar')) defaultIndex = i;
     });
     
-    if (allVoices.length > 0) {
+    if (voices.length > 0) {
         select.value = defaultIndex;
-        selectedVoice = allVoices[defaultIndex];
+        selectedVoice = voices[defaultIndex];
     }
-    
-    select.addEventListener('change', () => {
-        selectedVoice = allVoices[select.value];
-    });
 }
 
-function loadChapter() {
+function setVoice(index) {
+    if (voices[index]) selectedVoice = voices[index];
+}
+
+function loadBook() {
     const bookIndex = parseInt(document.getElementById('book-select').value);
-    const chapter = parseInt(document.getElementById('chapter-select').value);
-    
-    if (isNaN(bookIndex) || isNaN(chapter)) {
-        alert('Please select a book and chapter');
+    if (isNaN(bookIndex)) {
+        alert('Please select a book');
         return;
     }
     
     currentBookIndex = bookIndex;
-    currentChapter = chapter;
+    currentChapter = 1;
+    currentVerseIndex = 0;
     
     const book = BOOKS[bookIndex];
     const bookData = bibleData[bookIndex];
     
-    if (!bookData || !bookData.chapters[chapter - 1]) {
-        document.getElementById('verses').innerHTML = '<p class="error">Chapter not found</p>';
-        return;
+    document.getElementById('book-title').textContent = book.name;
+    document.getElementById('subtitle').style.display = 'none';
+    document.getElementById('current-ref').textContent = `${book.name} 1:1`;
+    document.getElementById('bottom-nav').style.display = 'block';
+    
+    // Build table of contents
+    let tocHtml = '';
+    for (let i = 1; i <= book.chapters; i++) {
+        tocHtml += `<a href="#ch${i}">${i}</a>`;
+    }
+    document.getElementById('toc').innerHTML = tocHtml;
+    
+    // Build all chapters
+    let chaptersHtml = '';
+    allVerses = [];
+    
+    for (let ch = 1; ch <= book.chapters; ch++) {
+        const chapterVerses = bookData.chapters[ch - 1] || [];
+        
+        // Chapter section
+        const isFirst = ch === 1;
+        const prevCh = ch > 1 ? `<a href="#ch${ch-1}">← Prev</a>` : '';
+        const nextCh = ch < book.chapters ? `<a href="#ch${ch+1}">Next →</a>` : '';
+        
+        chaptersHtml += `
+            <div class="chapter-section" id="section-${ch}">
+                <div class="chapter-header">
+                    <h2 id="ch${ch}">Chapter ${ch}</h2>
+                </div>
+                <div class="nav">${prevCh} <a href="#top">Top</a> <a href="#bottom">Bottom</a> ${nextCh}</div>
+            </div>
+        `;
+        
+        // Verses - group into paragraphs
+        let versesHtml = '<p>';
+        chapterVerses.forEach((text, i) => {
+            const verseNum = i + 1;
+            const cleanText = text.replace(/\{[^}]*\}/g, ''); // Remove KJV annotations
+            
+            allVerses.push({
+                chapter: ch,
+                num: verseNum,
+                text: cleanText,
+                globalIndex: allVerses.length
+            });
+            
+            versesHtml += `<span class="verse" data-chapter="${ch}" data-verse="${verseNum}"><span class="verse-num">${verseNum}</span>${cleanText} </span>`;
+            
+            // New paragraph every ~4 verses
+            if (verseNum % 4 === 0 && verseNum < chapterVerses.length) {
+                versesHtml += '</p><p>';
+            }
+        });
+        versesHtml += '</p>';
+        
+        chaptersHtml += versesHtml;
     }
     
-    // Get verses (array of strings)
-    const chapterVerses = bookData.chapters[chapter - 1];
-    verses = chapterVerses.map((text, i) => ({
-        num: i + 1,
-        text: text.replace(/\{[^}]*\}/g, '') // Remove KJV annotations like {was}
-    }));
+    document.getElementById('chapters').innerHTML = chaptersHtml;
     
-    document.getElementById('book-title').textContent = `${book.name} ${chapter}`;
-    document.getElementById('current-ref').textContent = `${book.name} ${chapter}`;
-    
-    renderVerses();
-    currentVerseIndex = 0;
-    highlightVerse(0);
-}
-
-function renderVerses() {
-    const container = document.getElementById('verses');
-    container.innerHTML = '';
-    
-    let html = '<p>';
-    verses.forEach((v, i) => {
-        html += `<span class="verse" data-index="${i}"><span class="verse-num">${v.num}</span>${v.text} </span>`;
-        if ((i + 1) % 4 === 0 && i < verses.length - 1) {
-            html += '</p><p>';
-        }
-    });
-    html += '</p>';
-    
-    container.innerHTML = html;
-    
-    container.querySelectorAll('.verse').forEach(el => {
+    // Add click handlers to verses
+    document.querySelectorAll('.verse').forEach(el => {
         el.addEventListener('click', () => {
-            const idx = parseInt(el.dataset.index);
-            goToVerse(idx);
+            const ch = parseInt(el.dataset.chapter);
+            const v = parseInt(el.dataset.verse);
+            goToVerse(ch, v);
         });
     });
+    
+    // Highlight first verse
+    highlightVerse(1, 1);
 }
 
-function highlightVerse(index) {
+function highlightVerse(chapter, verseNum) {
     document.querySelectorAll('.verse.reading').forEach(el => el.classList.remove('reading'));
     
-    const verse = document.querySelector(`.verse[data-index="${index}"]`);
+    const verse = document.querySelector(`.verse[data-chapter="${chapter}"][data-verse="${verseNum}"]`);
     if (verse) {
         verse.classList.add('reading');
         verse.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     
-    if (verses[index]) {
-        const book = BOOKS[currentBookIndex];
-        document.getElementById('current-ref').textContent = 
-            `${book.name} ${currentChapter}:${verses[index].num}`;
-    }
+    currentChapter = chapter;
+    const book = BOOKS[currentBookIndex];
+    document.getElementById('current-ref').textContent = `${book.name} ${chapter}:${verseNum}`;
+    
+    // Update currentVerseIndex
+    currentVerseIndex = allVerses.findIndex(v => v.chapter === chapter && v.num === verseNum);
 }
 
-function goToVerse(index) {
-    if (index < 0 || index >= verses.length) return;
-    currentVerseIndex = index;
-    highlightVerse(index);
+function goToVerse(chapter, verseNum) {
+    highlightVerse(chapter, verseNum);
     
     if (isPlaying) {
         speechSynthesis.cancel();
@@ -246,23 +248,15 @@ function goToVerse(index) {
 }
 
 function speakCurrentVerse() {
-    if (!isPlaying || currentVerseIndex >= verses.length) {
-        if (currentVerseIndex >= verses.length) {
-            const book = BOOKS[currentBookIndex];
-            if (currentChapter < book.chapters) {
-                currentChapter++;
-                document.getElementById('chapter-select').value = currentChapter;
-                loadChapter();
-                if (isPlaying) setTimeout(speakCurrentVerse, 100);
-            } else {
-                isPlaying = false;
-            }
+    if (!isPlaying || currentVerseIndex >= allVerses.length) {
+        if (currentVerseIndex >= allVerses.length) {
+            isPlaying = false;
         }
         return;
     }
     
-    const verse = verses[currentVerseIndex];
-    highlightVerse(currentVerseIndex);
+    const verse = allVerses[currentVerseIndex];
+    highlightVerse(verse.chapter, verse.num);
     
     const utterance = new SpeechSynthesisUtterance(verse.text);
     utterance.rate = speed;
@@ -281,7 +275,7 @@ function speakCurrentVerse() {
 }
 
 function playFromCurrent() {
-    if (verses.length === 0) return;
+    if (allVerses.length === 0) return;
     isPlaying = true;
     speakCurrentVerse();
 }
@@ -293,42 +287,59 @@ function pausePlayback() {
 
 function prevVerse() {
     if (currentVerseIndex > 0) {
-        goToVerse(currentVerseIndex - 1);
+        currentVerseIndex--;
+        const verse = allVerses[currentVerseIndex];
+        highlightVerse(verse.chapter, verse.num);
+        if (isPlaying) {
+            speechSynthesis.cancel();
+            speakCurrentVerse();
+        }
     }
 }
 
 function nextVerse() {
-    if (currentVerseIndex < verses.length - 1) {
-        goToVerse(currentVerseIndex + 1);
+    if (currentVerseIndex < allVerses.length - 1) {
+        currentVerseIndex++;
+        const verse = allVerses[currentVerseIndex];
+        highlightVerse(verse.chapter, verse.num);
+        if (isPlaying) {
+            speechSynthesis.cancel();
+            speakCurrentVerse();
+        }
     }
 }
 
 function prevChapter() {
     if (currentChapter > 1) {
-        speechSynthesis.cancel();
-        currentChapter--;
-        document.getElementById('chapter-select').value = currentChapter;
-        loadChapter();
-        if (isPlaying) setTimeout(speakCurrentVerse, 100);
+        const newChapter = currentChapter - 1;
+        const firstVerse = allVerses.find(v => v.chapter === newChapter);
+        if (firstVerse) {
+            goToVerse(newChapter, 1);
+        }
     }
 }
 
 function nextChapter() {
     const book = BOOKS[currentBookIndex];
-    if (book && currentChapter < book.chapters) {
-        speechSynthesis.cancel();
-        currentChapter++;
-        document.getElementById('chapter-select').value = currentChapter;
-        loadChapter();
-        if (isPlaying) setTimeout(speakCurrentVerse, 100);
+    if (currentChapter < book.chapters) {
+        const newChapter = currentChapter + 1;
+        const firstVerse = allVerses.find(v => v.chapter === newChapter);
+        if (firstVerse) {
+            goToVerse(newChapter, 1);
+        }
     }
+}
+
+function restartCurrentChapter() {
+    goToVerse(currentChapter, 1);
 }
 
 function setSpeed(newSpeed) {
     speed = newSpeed;
     
     document.querySelectorAll('[data-speed]').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`[data-speed="${speed}"]`).classList.add('active');
+    const activeBtn = document.querySelector(`[data-speed="${speed}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
     
     if (isPlaying) {
         speechSynthesis.cancel();

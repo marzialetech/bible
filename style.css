@@ -22,20 +22,35 @@ main {
 h1 {
     font-size: 32px;
     font-weight: normal;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 h2 {
     font-size: 22px;
     font-weight: normal;
-    margin: 40px 0 20px 0;
-    padding-top: 20px;
-    border-top: 1px solid #333;
+    margin: 0 0 10px 0;
+    padding: 0;
 }
 
 .subtitle {
     color: #666;
     margin-bottom: 30px;
+}
+
+.toc {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #333;
+}
+
+.toc a {
+    color: #fff;
+    text-decoration: none;
+    margin-right: 15px;
+}
+
+.toc a:hover {
+    text-decoration: underline;
 }
 
 .floating-controls {
@@ -72,14 +87,15 @@ h2 {
     color: #fff;
     border: 1px solid #444;
     font-family: inherit;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .floating-controls button {
     background: #222;
     color: #fff;
     border: 1px solid #444;
-    padding: 8px 10px;
+    padding: 6px 10px;
+    margin-bottom: 6px;
     cursor: pointer;
     font-family: inherit;
     font-size: 13px;
@@ -104,19 +120,59 @@ h2 {
 
 .floating-controls .btn-row button {
     flex: 1;
-    padding: 8px 4px;
+    margin-bottom: 0;
+    padding: 6px 4px;
 }
 
 .load-btn {
     background: #2a4a2a !important;
-    margin-bottom: 0 !important;
 }
 
 .load-btn:hover {
     background: #3a5a3a !important;
 }
 
-#verses p {
+.chapter-section {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+}
+
+#section-1 {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.chapter-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.chapter-header h2 {
+    margin: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.nav {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.nav a {
+    color: #fff;
+    text-decoration: none;
+    margin-right: 15px;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+}
+
+p {
     margin-bottom: 12px;
     text-align: justify;
 }
@@ -171,7 +227,7 @@ h2 {
         width: 100%;
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
         padding: 10px;
         border: none;
         border-top: 1px solid #333;
@@ -179,13 +235,13 @@ h2 {
     
     .floating-controls .current-ref {
         width: 100%;
-        margin-bottom: 8px;
-        padding-bottom: 8px;
+        margin-bottom: 6px;
+        padding-bottom: 6px;
     }
     
     .floating-controls select {
         flex: 1;
-        min-width: 80px;
+        min-width: 100px;
         margin-bottom: 0;
     }
     
@@ -197,12 +253,16 @@ h2 {
         margin-bottom: 0;
     }
     
+    .floating-controls > button {
+        margin-bottom: 0;
+    }
+    
     .load-btn {
-        flex: 0 0 60px !important;
+        flex: 0 0 80px !important;
         width: auto !important;
     }
     
     main {
-        padding-bottom: 200px;
+        padding-bottom: 220px;
     }
 }
