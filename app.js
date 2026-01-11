@@ -1,26 +1,78 @@
-// Bible books with chapter counts
-const BOOKS = {
-    // Old Testament
-    'Genesis': 50, 'Exodus': 40, 'Leviticus': 27, 'Numbers': 36, 'Deuteronomy': 34,
-    'Joshua': 24, 'Judges': 21, 'Ruth': 4, '1 Samuel': 31, '2 Samuel': 24,
-    '1 Kings': 22, '2 Kings': 25, '1 Chronicles': 29, '2 Chronicles': 36,
-    'Ezra': 10, 'Nehemiah': 13, 'Esther': 10, 'Job': 42, 'Psalms': 150,
-    'Proverbs': 31, 'Ecclesiastes': 12, 'Song of Solomon': 8, 'Isaiah': 66,
-    'Jeremiah': 52, 'Lamentations': 5, 'Ezekiel': 48, 'Daniel': 12,
-    'Hosea': 14, 'Joel': 3, 'Amos': 9, 'Obadiah': 1, 'Jonah': 4,
-    'Micah': 7, 'Nahum': 3, 'Habakkuk': 3, 'Zephaniah': 3, 'Haggai': 2,
-    'Zechariah': 14, 'Malachi': 4,
-    // New Testament
-    'Matthew': 28, 'Mark': 16, 'Luke': 24, 'John': 21, 'Acts': 28,
-    'Romans': 16, '1 Corinthians': 16, '2 Corinthians': 13, 'Galatians': 6,
-    'Ephesians': 6, 'Philippians': 4, 'Colossians': 4, '1 Thessalonians': 5,
-    '2 Thessalonians': 3, '1 Timothy': 6, '2 Timothy': 4, 'Titus': 3,
-    'Philemon': 1, 'Hebrews': 13, 'James': 5, '1 Peter': 5, '2 Peter': 3,
-    '1 John': 5, '2 John': 1, '3 John': 1, 'Jude': 1, 'Revelation': 22
-};
+// Bible books with abbreviations matching the JSON file
+const BOOKS = [
+    { name: 'Genesis', abbrev: 'gn', chapters: 50 },
+    { name: 'Exodus', abbrev: 'ex', chapters: 40 },
+    { name: 'Leviticus', abbrev: 'lv', chapters: 27 },
+    { name: 'Numbers', abbrev: 'nm', chapters: 36 },
+    { name: 'Deuteronomy', abbrev: 'dt', chapters: 34 },
+    { name: 'Joshua', abbrev: 'jos', chapters: 24 },
+    { name: 'Judges', abbrev: 'jdgs', chapters: 21 },
+    { name: 'Ruth', abbrev: 'ru', chapters: 4 },
+    { name: '1 Samuel', abbrev: '1sm', chapters: 31 },
+    { name: '2 Samuel', abbrev: '2sm', chapters: 24 },
+    { name: '1 Kings', abbrev: '1kgs', chapters: 22 },
+    { name: '2 Kings', abbrev: '2kgs', chapters: 25 },
+    { name: '1 Chronicles', abbrev: '1chr', chapters: 29 },
+    { name: '2 Chronicles', abbrev: '2chr', chapters: 36 },
+    { name: 'Ezra', abbrev: 'ezr', chapters: 10 },
+    { name: 'Nehemiah', abbrev: 'neh', chapters: 13 },
+    { name: 'Esther', abbrev: 'est', chapters: 10 },
+    { name: 'Job', abbrev: 'job', chapters: 42 },
+    { name: 'Psalms', abbrev: 'ps', chapters: 150 },
+    { name: 'Proverbs', abbrev: 'prv', chapters: 31 },
+    { name: 'Ecclesiastes', abbrev: 'eccl', chapters: 12 },
+    { name: 'Song of Solomon', abbrev: 'ssol', chapters: 8 },
+    { name: 'Isaiah', abbrev: 'is', chapters: 66 },
+    { name: 'Jeremiah', abbrev: 'jer', chapters: 52 },
+    { name: 'Lamentations', abbrev: 'lam', chapters: 5 },
+    { name: 'Ezekiel', abbrev: 'ez', chapters: 48 },
+    { name: 'Daniel', abbrev: 'dn', chapters: 12 },
+    { name: 'Hosea', abbrev: 'hos', chapters: 14 },
+    { name: 'Joel', abbrev: 'jl', chapters: 3 },
+    { name: 'Amos', abbrev: 'am', chapters: 9 },
+    { name: 'Obadiah', abbrev: 'ob', chapters: 1 },
+    { name: 'Jonah', abbrev: 'jon', chapters: 4 },
+    { name: 'Micah', abbrev: 'mic', chapters: 7 },
+    { name: 'Nahum', abbrev: 'nah', chapters: 3 },
+    { name: 'Habakkuk', abbrev: 'hab', chapters: 3 },
+    { name: 'Zephaniah', abbrev: 'zep', chapters: 3 },
+    { name: 'Haggai', abbrev: 'hag', chapters: 2 },
+    { name: 'Zechariah', abbrev: 'zec', chapters: 14 },
+    { name: 'Malachi', abbrev: 'mal', chapters: 4 },
+    { name: 'Matthew', abbrev: 'mt', chapters: 28 },
+    { name: 'Mark', abbrev: 'mk', chapters: 16 },
+    { name: 'Luke', abbrev: 'lk', chapters: 24 },
+    { name: 'John', abbrev: 'jo', chapters: 21 },
+    { name: 'Acts', abbrev: 'act', chapters: 28 },
+    { name: 'Romans', abbrev: 'rm', chapters: 16 },
+    { name: '1 Corinthians', abbrev: '1co', chapters: 16 },
+    { name: '2 Corinthians', abbrev: '2co', chapters: 13 },
+    { name: 'Galatians', abbrev: 'gal', chapters: 6 },
+    { name: 'Ephesians', abbrev: 'eph', chapters: 6 },
+    { name: 'Philippians', abbrev: 'phi', chapters: 4 },
+    { name: 'Colossians', abbrev: 'col', chapters: 4 },
+    { name: '1 Thessalonians', abbrev: '1th', chapters: 5 },
+    { name: '2 Thessalonians', abbrev: '2th', chapters: 3 },
+    { name: '1 Timothy', abbrev: '1tm', chapters: 6 },
+    { name: '2 Timothy', abbrev: '2tm', chapters: 4 },
+    { name: 'Titus', abbrev: 'tit', chapters: 3 },
+    { name: 'Philemon', abbrev: 'phm', chapters: 1 },
+    { name: 'Hebrews', abbrev: 'heb', chapters: 13 },
+    { name: 'James', abbrev: 'jm', chapters: 5 },
+    { name: '1 Peter', abbrev: '1pe', chapters: 5 },
+    { name: '2 Peter', abbrev: '2pe', chapters: 3 },
+    { name: '1 John', abbrev: '1jo', chapters: 5 },
+    { name: '2 John', abbrev: '2jo', chapters: 1 },
+    { name: '3 John', abbrev: '3jo', chapters: 1 },
+    { name: 'Jude', abbrev: 'jd', chapters: 1 },
+    { name: 'Revelation', abbrev: 'rev', chapters: 22 }
+];
+
+// Bible data (loaded from JSON)
+let bibleData = null;
 
 // Current state
-let currentBook = null;
+let currentBookIndex = null;
 let currentChapter = null;
 let verses = [];
 let currentVerseIndex = 0;
@@ -29,38 +81,20 @@ let speed = 1;
 let selectedVoice = null;
 let allVoices = [];
 
-// API Configuration - swap this to ESV later
-const API = {
-    // bible-api.com (WEB translation) - free, no key needed
-    fetch: async (book, chapter) => {
-        const query = `${book}+${chapter}`;
-        const res = await fetch(`https://bible-api.com/${encodeURIComponent(query)}`);
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        return data.verses.map(v => ({
-            num: v.verse,
-            text: v.text.trim()
-        }));
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+    // Load Bible JSON
+    try {
+        document.getElementById('verses').innerHTML = '<p class="loading">Loading Bible data...</p>';
+        const res = await fetch('bible.json');
+        bibleData = await res.json();
+        document.getElementById('verses').innerHTML = '<p class="subtitle">Select a book and chapter to begin</p>';
+    } catch (err) {
+        document.getElementById('verses').innerHTML = '<p class="error">Failed to load Bible data</p>';
+        console.error(err);
+        return;
     }
     
-    // ESV API - uncomment and add your key when ready
-    // fetch: async (book, chapter) => {
-    //     const API_KEY = 'YOUR_ESV_API_KEY';
-    //     const query = `${book}+${chapter}`;
-    //     const res = await fetch(`https://api.esv.org/v3/passage/text/?q=${encodeURIComponent(query)}&include-headings=false&include-footnotes=false&include-verse-numbers=false&include-short-copyright=false&include-passage-references=false`, {
-    //         headers: { 'Authorization': `Token ${API_KEY}` }
-    //     });
-    //     if (!res.ok) throw new Error('Failed to fetch');
-    //     const data = await res.json();
-    //     // Parse ESV response into verses array
-    //     // Note: ESV API returns full text, you'd need to parse verses differently
-    //     return parseESVResponse(data);
-    // }
-};
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
     populateBooks();
     populateVoices();
     if (speechSynthesis.onvoiceschanged !== undefined) {
@@ -70,25 +104,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function populateBooks() {
     const select = document.getElementById('book-select');
-    Object.keys(BOOKS).forEach(book => {
+    BOOKS.forEach((book, i) => {
         const opt = document.createElement('option');
-        opt.value = book;
-        opt.textContent = book;
+        opt.value = i;
+        opt.textContent = book.name;
         select.appendChild(opt);
     });
     
     select.addEventListener('change', () => {
-        populateChapters(select.value);
+        populateChapters(parseInt(select.value));
     });
 }
 
-function populateChapters(book) {
+function populateChapters(bookIndex) {
     const select = document.getElementById('chapter-select');
     select.innerHTML = '<option value="">-- Chapter --</option>';
     
-    if (!book || !BOOKS[book]) return;
+    if (bookIndex < 0 || !BOOKS[bookIndex]) return;
     
-    for (let i = 1; i <= BOOKS[book]; i++) {
+    const book = BOOKS[bookIndex];
+    for (let i = 1; i <= book.chapters; i++) {
         const opt = document.createElement('option');
         opt.value = i;
         opt.textContent = `Chapter ${i}`;
@@ -125,42 +160,48 @@ function populateVoices() {
     });
 }
 
-async function loadChapter() {
-    const book = document.getElementById('book-select').value;
-    const chapter = document.getElementById('chapter-select').value;
+function loadChapter() {
+    const bookIndex = parseInt(document.getElementById('book-select').value);
+    const chapter = parseInt(document.getElementById('chapter-select').value);
     
-    if (!book || !chapter) {
+    if (isNaN(bookIndex) || isNaN(chapter)) {
         alert('Please select a book and chapter');
         return;
     }
     
-    currentBook = book;
-    currentChapter = parseInt(chapter);
+    currentBookIndex = bookIndex;
+    currentChapter = chapter;
     
-    document.getElementById('book-title').textContent = `${book} ${chapter}`;
-    document.getElementById('verses').innerHTML = '<p class="loading">Loading...</p>';
-    document.getElementById('current-ref').textContent = `${book} ${chapter}`;
+    const book = BOOKS[bookIndex];
+    const bookData = bibleData[bookIndex];
     
-    try {
-        verses = await API.fetch(book, chapter);
-        renderVerses();
-        currentVerseIndex = 0;
-        highlightVerse(0);
-    } catch (err) {
-        document.getElementById('verses').innerHTML = `<p class="error">Error: ${err.message}</p>`;
-        verses = [];
+    if (!bookData || !bookData.chapters[chapter - 1]) {
+        document.getElementById('verses').innerHTML = '<p class="error">Chapter not found</p>';
+        return;
     }
+    
+    // Get verses (array of strings)
+    const chapterVerses = bookData.chapters[chapter - 1];
+    verses = chapterVerses.map((text, i) => ({
+        num: i + 1,
+        text: text.replace(/\{[^}]*\}/g, '') // Remove KJV annotations like {was}
+    }));
+    
+    document.getElementById('book-title').textContent = `${book.name} ${chapter}`;
+    document.getElementById('current-ref').textContent = `${book.name} ${chapter}`;
+    
+    renderVerses();
+    currentVerseIndex = 0;
+    highlightVerse(0);
 }
 
 function renderVerses() {
     const container = document.getElementById('verses');
     container.innerHTML = '';
     
-    // Group verses into paragraphs (roughly every 3-5 verses)
     let html = '<p>';
     verses.forEach((v, i) => {
         html += `<span class="verse" data-index="${i}"><span class="verse-num">${v.num}</span>${v.text} </span>`;
-        // New paragraph roughly every 4 verses or at natural breaks
         if ((i + 1) % 4 === 0 && i < verses.length - 1) {
             html += '</p><p>';
         }
@@ -169,7 +210,6 @@ function renderVerses() {
     
     container.innerHTML = html;
     
-    // Add click handlers
     container.querySelectorAll('.verse').forEach(el => {
         el.addEventListener('click', () => {
             const idx = parseInt(el.dataset.index);
@@ -188,8 +228,9 @@ function highlightVerse(index) {
     }
     
     if (verses[index]) {
+        const book = BOOKS[currentBookIndex];
         document.getElementById('current-ref').textContent = 
-            `${currentBook} ${currentChapter}:${verses[index].num}`;
+            `${book.name} ${currentChapter}:${verses[index].num}`;
     }
 }
 
@@ -207,13 +248,12 @@ function goToVerse(index) {
 function speakCurrentVerse() {
     if (!isPlaying || currentVerseIndex >= verses.length) {
         if (currentVerseIndex >= verses.length) {
-            // Auto-advance to next chapter
-            if (currentChapter < BOOKS[currentBook]) {
+            const book = BOOKS[currentBookIndex];
+            if (currentChapter < book.chapters) {
                 currentChapter++;
                 document.getElementById('chapter-select').value = currentChapter;
-                loadChapter().then(() => {
-                    if (isPlaying) speakCurrentVerse();
-                });
+                loadChapter();
+                if (isPlaying) setTimeout(speakCurrentVerse, 100);
             } else {
                 isPlaying = false;
             }
@@ -268,20 +308,19 @@ function prevChapter() {
         speechSynthesis.cancel();
         currentChapter--;
         document.getElementById('chapter-select').value = currentChapter;
-        loadChapter().then(() => {
-            if (isPlaying) speakCurrentVerse();
-        });
+        loadChapter();
+        if (isPlaying) setTimeout(speakCurrentVerse, 100);
     }
 }
 
 function nextChapter() {
-    if (currentBook && currentChapter < BOOKS[currentBook]) {
+    const book = BOOKS[currentBookIndex];
+    if (book && currentChapter < book.chapters) {
         speechSynthesis.cancel();
         currentChapter++;
         document.getElementById('chapter-select').value = currentChapter;
-        loadChapter().then(() => {
-            if (isPlaying) speakCurrentVerse();
-        });
+        loadChapter();
+        if (isPlaying) setTimeout(speakCurrentVerse, 100);
     }
 }
 
